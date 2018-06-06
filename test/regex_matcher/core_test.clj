@@ -9,23 +9,23 @@
 
   (def odd-a (->dfa states-1 transition-func-1 accept-states-1 starting-state-1))
 
-  (deftest accept-odd-amount-of-a
+  (deftest dfa-accept-odd-amount-of-a
     (testing "Accepts single a")
-      (is (= true (accept? odd-a "a")))
+      (is (= true (accept-dfa? odd-a "a")))
     (testing "Accepts five a")
-      (is (= true (accept? odd-a "aaaaa")))
+      (is (= true (accept-dfa? odd-a "aaaaa")))
     (testing "Accepts 11 a")
-      (is (= true (accept? odd-a (repeat 11 "a"))))
+      (is (= true (accept-dfa? odd-a (repeat 11 "a"))))
     (testing "Accepts 101 a")
-      (is (= true (accept? odd-a (repeat 101 "a"))))
+      (is (= true (accept-dfa? odd-a (repeat 101 "a"))))
     (testing "Rejects zero a")
-      (is (= false (accept? odd-a "")))
+      (is (= false (accept-dfa? odd-a "")))
     (testing "Rejects two a")
-      (is (= false (accept? odd-a "aa")))
+      (is (= false (accept-dfa? odd-a "aa")))
     (testing "Rejects four a")
-      (is (= false (accept? odd-a "aaaa")))
+      (is (= false (accept-dfa? odd-a "aaaa")))
     (testing "Rejects 1000 a")
-      (is (= false (accept? odd-a (repeat 1000 "a")))))
+      (is (= false (accept-dfa? odd-a (repeat 1000 "a")))))
 
   (def states-2 #{"S0" "S1" "S2" "S3" "S4" "S5" "SFail"})
   (def transition-func-2 {{:state "S0", :char \a} "S1",
@@ -47,20 +47,49 @@
 
   (def abbab (->dfa states-2 transition-func-2 accept-states-2 starting-state-2))
 
-  (deftest accept-abbab
+  (deftest dfa-accept-abbab
     (testing "Accepts abbbab")
-      (is (= true (accept? abbab "abbab")))
+      (is (= true (accept-dfa? abbab "abbab")))
     (testing "Rejects empty")
-      (is (= false (accept? abbab "")))
+      (is (= false (accept-dfa? abbab "")))
     (testing "Rejects a")
-      (is (= false (accept? abbab "a")))
+      (is (= false (accept-dfa? abbab "a")))
     (testing "Rejects b")
-      (is (= false (accept? abbab "b")))
+      (is (= false (accept-dfa? abbab "b")))
     (testing "Rejects five a")
-      (is (= false (accept? abbab "aaaaa")))
+      (is (= false (accept-dfa? abbab "aaaaa")))
     (testing "Rejects ab")
-      (is (= false (accept? abbab "ab")))
+      (is (= false (accept-dfa? abbab "ab")))
     (testing "Rejects abab")
-      (is (= false (accept? abbab "abab")))
+      (is (= false (accept-dfa? abbab "abab")))
     (testing "Rejects 10 ab")
-      (is (= false (accept? abbab (repeat 1000 "ab")))))
+      (is (= false (accept-dfa? abbab (repeat 1000 "ab")))))
+
+  (def states-nfa-1 #{"S0" "S1" "S2" "S3" "S4" "S5"})
+  (def transition-func-nfa-1 {{:state "S0", :char \a} #{"S1"},
+                          {:state "S1", :char \b} #{"S2"},
+                          {:state "S2", :char \b} #{"S3"},
+                          {:state "S3", :char \a} #{"S4"},
+                          {:state "S4", :char \b} #{"S5"}})
+  (def accept-states-nfa-1 #{"S5"})
+  (def starting-state-nfa-1 "S0")
+
+  (def abbab-nfa (->nfa states-nfa-1 transition-func-nfa-1 accept-states-nfa-1 starting-state-nfa-1))
+
+  (deftest nfa-accept-abbab
+    (testing "Accepts abbbab")
+      (is (= true (accept-nfa? abbab-nfa "abbab")))
+    (testing "Rejects empty")
+      (is (= false (accept-nfa? abbab-nfa "")))
+    (testing "Rejects a")
+      (is (= false (accept-nfa? abbab-nfa "a")))
+    (testing "Rejects b")
+      (is (= false (accept-nfa? abbab-nfa "b")))
+    (testing "Rejects five a")
+      (is (= false (accept-nfa? abbab-nfa "aaaaa")))
+    (testing "Rejects ab")
+      (is (= false (accept-nfa? abbab-nfa "ab")))
+    (testing "Rejects abab")
+      (is (= false (accept-nfa? abbab-nfa "abab")))
+    (testing "Rejects 10 ab")
+      (is (= false (accept-nfa? abbab-nfa (repeat 1000 "ab")))))
