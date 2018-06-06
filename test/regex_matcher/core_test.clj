@@ -77,7 +77,7 @@
   (def abbab-nfa (->nfa states-nfa-1 transition-func-nfa-1 accept-states-nfa-1 starting-state-nfa-1))
 
   (deftest nfa-accept-abbab
-    (testing "Accepts abbbab")
+    (testing "Accepts abbab")
       (is (= true (accept-nfa? abbab-nfa "abbab")))
     (testing "Rejects empty")
       (is (= false (accept-nfa? abbab-nfa "")))
@@ -91,5 +91,37 @@
       (is (= false (accept-nfa? abbab-nfa "ab")))
     (testing "Rejects abab")
       (is (= false (accept-nfa? abbab-nfa "abab")))
-    (testing "Rejects 10 ab")
+    (testing "Rejects 1000 ab")
       (is (= false (accept-nfa? abbab-nfa (repeat 1000 "ab")))))
+
+  (def states-nfa-2 #{"S0" "S1" "S2"})
+  (def transition-func-nfa-2 {{:state "S0", :char \a} #{"S1", "S2"},
+                          {:state "S1", :char \b} #{"S0"}})
+  (def accept-states-nfa-2 #{"S2"})
+  (def starting-state-nfa-2 "S0")
+
+  (def abstar-then-a-nfa (->nfa states-nfa-2 transition-func-nfa-2 accept-states-nfa-2 starting-state-nfa-2))
+
+  (deftest nfa-accept-abstar-a
+    (testing "Accepts a")
+      (is (= true (accept-nfa? abstar-then-a-nfa "a")))
+    (testing "Rejects empty")
+      (is (= false (accept-nfa? abstar-then-a-nfa "")))
+    (testing "Rejects ab")
+      (is (= false (accept-nfa? abstar-then-a-nfa "ab")))
+    (testing "Accepts aba")
+      (is (= true (accept-nfa? abstar-then-a-nfa "aba")))
+    (testing "Rejects five a")
+      (is (= false (accept-nfa? abstar-then-a-nfa "aaaaa")))
+    (testing "Rejects aab")
+      (is (= false (accept-nfa? abstar-then-a-nfa "aab")))
+    (testing "Rejects abba")
+      (is (= false (accept-nfa? abstar-then-a-nfa "abba")))
+    (testing "Accepts ababa")
+      (is (= true (accept-nfa? abstar-then-a-nfa "ababa")))
+    (testing "Accepts ababababababababababa")
+      (is (= true (accept-nfa? abstar-then-a-nfa "ababababababababababa")))
+    (testing "Accepts 1000 ab then a")
+      (is (= true (accept-nfa? abstar-then-a-nfa (str (apply str (repeat 1000 "ab")) "a"))))
+    (testing "Rejects 5000 ab")
+      (is (= false (accept-nfa? abstar-then-a-nfa (apply str (repeat 5000 "ab"))))))
