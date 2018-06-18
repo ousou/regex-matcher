@@ -16,17 +16,17 @@
     (is-accepting? dfa current-state)
     (accept-with-current-state dfa (apply str (rest string)) (next-state dfa current-state (first string)))))
 
-(defn accept-dfa? [dfa string]
+(defn accept-dfa?
+  "Returns true if the given dfa accepts the given string."
+  [dfa string]
   (accept-with-current-state dfa (apply str string) (:starting-state dfa)))
 
 (defn- next-states-nfa [nfa current-states char]
-  (loop [nfa nfa
-         current-states current-states
-         char char
+  (loop [current-states current-states
          next-states #{}]
      (if (empty? current-states)
        next-states
-       (recur nfa (into #{} (rest current-states)) char (clojure.set/union next-states (next-state nfa (first current-states) char))))))
+       (recur (into #{} (rest current-states)) (clojure.set/union next-states (next-state nfa (first current-states) char))))))
 
 (defn- is-accepting-nfa? [nfa current-states]
     (not (empty? (clojure.set/intersection (:accepting-states nfa) current-states))))
@@ -39,12 +39,13 @@
             (recur (clojure.set/union current-states eps-transitions))))))
 
 (defn- accept-nfa-with-current-states [nfa string current-states]
-  (loop [nfa nfa
-         string string
+  (loop [string string
          current-states current-states]
     (if (empty? string)
       (is-accepting-nfa? nfa (do-eps-transitions nfa current-states))
-      (recur nfa (apply str (rest string)) (next-states-nfa nfa (do-eps-transitions nfa current-states) (first string))))))
+      (recur (apply str (rest string)) (next-states-nfa nfa (do-eps-transitions nfa current-states) (first string))))))
 
-(defn accept-nfa? [nfa string]
+(defn accept-nfa?
+  "Returns true if the given nfa accepts the given string."
+  [nfa string]
   (accept-nfa-with-current-states nfa (apply str string) #{(:starting-state nfa)}))
