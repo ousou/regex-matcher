@@ -41,9 +41,9 @@
 (defn- accept-nfa-with-current-states [nfa string current-states]
   (loop [string string
          current-states current-states]
-    (if (empty? string)
-      (is-accepting-nfa? nfa (do-eps-transitions nfa current-states))
-      (recur (apply str (rest string)) (next-states-nfa nfa (do-eps-transitions nfa current-states) (first string))))))
+    (cond (empty? current-states) false
+          (empty? string) (is-accepting-nfa? nfa (do-eps-transitions nfa current-states))
+          :else (recur (apply str (rest string)) (next-states-nfa nfa (do-eps-transitions nfa current-states) (first string))))))
 
 (defn accept-nfa?
   "Returns true if the given nfa accepts the given string."
