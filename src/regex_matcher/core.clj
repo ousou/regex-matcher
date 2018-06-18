@@ -31,13 +31,20 @@
 (defn- is-accepting-nfa? [nfa current-states]
     (not (empty? (clojure.set/intersection (:accepting-states nfa) current-states))))
 
+(defn- do-eps-transitions [nfa current-states]
+  (loop [current-states current-states]
+        (let [eps-transitions (next-states-nfa nfa current-states :eps)]
+          (if (empty? (clojure.set/difference eps-transitions current-states))
+            current-states
+            (recur (clojure.set/union current-states eps-transitions))))))
+
 (defn- accept-nfa-with-current-states [nfa string current-states]
   (loop [nfa nfa
          string string
          current-states current-states]
     (if (empty? string)
-      (is-accepting-nfa? nfa current-states)
-      (recur nfa (apply str (rest string)) (next-states-nfa nfa current-states (first string))))))
+      (is-accepting-nfa? nfa (do-eps-transitions nfa current-states))
+      (recur nfa (apply str (rest string)) (next-states-nfa nfa (do-eps-transitions nfa current-states) (first string))))))
 
 (defn accept-nfa? [nfa string]
   (accept-nfa-with-current-states nfa (apply str string) #{(:starting-state nfa)}))
