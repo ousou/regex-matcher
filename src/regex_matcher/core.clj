@@ -49,3 +49,31 @@
   "Returns true if the given nfa accepts the given string."
   [nfa string]
   (accept-nfa-with-current-states nfa (apply str string) #{(:starting-state nfa)}))
+
+(def or-starting-state "or-starting-state")
+
+(defn- create-union-starting-state [nfa-1 nfa-2]
+  or-starting-state)
+
+(defn- add-prefix-to-states [prefix states]
+  (into #{} (map (partial str prefix) states)))
+
+(defn- create-union-states [nfa-1 nfa-2]
+  (clojure.set/union (into #{} or-starting-state) (add-prefix-to-states "1-" (:states nfa-1)) (add-prefix-to-states "2-" (:states nfa-2))))
+
+(defn- create-union-accepting-states [nfa-1 nfa-2]
+  (clojure.set/union (add-prefix-to-states "1-" (:accepting-states nfa-1)) (add-prefix-to-states "2-" (:accepting-states nfa-2))))
+
+(defn- create-transitions-for-new-starting-state [nfa-1 nfa-2]
+  {{:state or-starting-state :char :eps} #{(str "1-" (:starting-state nfa-1)) (str "2-" (:starting-state nfa-2))}})
+
+(defn- add-prefix-to-states-in-transition-func [prefix transition-func]
+  nil)
+
+(defn- create-union-transition-func [nfa-1 nfa-2]
+  (create-transitions-for-new-starting-state nfa-1 nfa-2))
+
+(defn create-union-nfa
+  "Creates a new nfa that accepts the union of the strings of the two given nfas"
+  [nfa-1 nfa-2]
+  (->nfa (create-union-states nfa-1 nfa-2) (create-union-transition-func nfa-1 nfa-2) (create-union-accepting-states nfa-1 nfa-2) (create-union-starting-state nfa-1 nfa-2)))

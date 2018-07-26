@@ -241,7 +241,7 @@
 (def states-nfa-6 #{"S0" "S1" "S2"})
 (def transition-func-nfa-6 {{:state "S0", :char :eps} #{"S1"},
                             {:state "S1", :char :eps} #{"S0"},
-                            {:state "S1", :char \a} #{"S2"},})
+                            {:state "S1", :char \a} #{"S2"}})
 (def accept-states-nfa-6 #{"S2"})
 (def starting-state-nfa-6 "S0")
 
@@ -274,3 +274,38 @@
     (is (= false (accept-nfa? accepts-a-with-eps-loop "ababa")))
   (testing "Rejects ababababababababababa")
     (is (= false (accept-nfa? accepts-a-with-eps-loop "ababababababababababa"))))
+
+
+(def states-accept-a-nfa #{"S0" "S1"})
+(def transition-func-accept-a-nfa {{:state "S0", :char \a} #{"S1"}})
+(def accept-states-accept-a-nfa #{"S1"})
+(def starting-state-accept-a-nfa "S0")
+
+(def accept-a-nfa (->nfa states-accept-a-nfa transition-func-accept-a-nfa accept-states-accept-a-nfa starting-state-accept-a-nfa))
+
+(def states-accept-b-nfa #{"S0" "S1"})
+(def transition-func-accept-b-nfa {{:state "S0", :char \b} #{"S1"}})
+(def accept-states-accept-b-nfa #{"S1"})
+(def starting-state-accept-b-nfa "S0")
+
+(def accept-b-nfa (->nfa states-accept-b-nfa transition-func-accept-b-nfa accept-states-accept-b-nfa starting-state-accept-b-nfa))
+
+(def a-union-b (create-union-nfa accept-a-nfa accept-b-nfa))
+
+(deftest create-union-nfa-a-or-b
+  (testing "Starting state is correct")
+    (is (= "or-starting-state" (:starting-state a-union-b)))
+  (testing "Accepting states are correct")
+    (is (= #{"1-S1","2-S1"} (:accepting-states a-union-b)))
+  (testing "New starting state transitions with eps to old starting state of both nfa's")
+    (is (= #{"1-S0","2-S0"} (get (:transition-function a-union-b) {:state "or-starting-state" :char :eps})))
+  (testing "Union rejects empty")
+    (is (= false (accept-nfa? a-union-b "")))
+  (testing "Union accepts a")
+    (is (= true (accept-nfa? a-union-b "a")))
+  (testing "Union accepts b")
+    (is (= true (accept-nfa? a-union-b "b")))
+  (testing "Union rejects ab")
+    (is (= false (accept-nfa? a-union-b "ab")))
+  (testing "Union rejects aaaaa")
+    (is (= false (accept-nfa? a-union-b "aaaaa"))))
