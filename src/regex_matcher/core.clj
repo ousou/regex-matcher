@@ -64,14 +64,29 @@
 (defn- create-union-accepting-states [nfa-1 nfa-2]
   (clojure.set/union (add-prefix-to-states "1-" (:accepting-states nfa-1)) (add-prefix-to-states "2-" (:accepting-states nfa-2))))
 
-(defn- create-transitions-for-new-starting-state [nfa-1 nfa-2]
+(defn- create-transitions-for-new-starting-state
+  "Creates epsilon transitions for the new starting state to the old, renamed, starting states of the original nfas"
+  [nfa-1 nfa-2]
   {{:state or-starting-state :char :eps} #{(str "1-" (:starting-state nfa-1)) (str "2-" (:starting-state nfa-2))}})
 
+(defn- add-prefix-to-state
+  "Adds the provided prefix to the state in the key of the given map entry from the transition function"
+  [prefix map-entry]
+  (let [state-and-char (first map-entry)
+        next-states (second map-entry)
+        state (:state state-and-char)
+        new-state (str prefix state)
+        char (:char state-and-char)
+        new-next-states (add-prefix-to-states prefix next-states)]
+      {{:state new-state :char char} new-next-states}))
+
 (defn- add-prefix-to-states-in-transition-func [prefix transition-func]
-  nil)
+  (into {} (map (partial add-prefix-to-state prefix) transition-func)))
 
 (defn- create-union-transition-func [nfa-1 nfa-2]
-  (create-transitions-for-new-starting-state nfa-1 nfa-2))
+  (merge (create-transitions-for-new-starting-state nfa-1 nfa-2)
+         (add-prefix-to-states-in-transition-func "1-" (:transition-function nfa-1))
+         (add-prefix-to-states-in-transition-func "2-" (:transition-function nfa-2))))
 
 (defn create-union-nfa
   "Creates a new nfa that accepts the union of the strings of the two given nfas"
